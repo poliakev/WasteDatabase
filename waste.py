@@ -1,8 +1,12 @@
 from hashlib import pbkdf2_hmac
-import tkinter as tk
+from tkinter import *
+import tkinter.messagebox as tm
+
 import sqlite3 as sql
 w = sql.connect('waste.db')
 waste = w.cursor()
+
+# *** dont forget w.commit() and w.close()
 
 password = 'mystup213123d' #default + int after last three letter of lastname in username
 
@@ -10,63 +14,78 @@ hash_name = 'sha256'
 salt = 'ssdirf993lksiqb4'
 iterations = 100000
 
-#password = ('mystupidpassword12') #marker is int following the last three chars of lastname ie mystupidpassword12 for ard12
-hashed_pwd = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
-#print (str_hashed_pwd[2:])
-
-# c.execute('''create table t1 (att1, att2)''')
-# conn.commit() <saves changes
-# conn.close() <close connection *make sure to commit changes
-
-# to get data from queries
-#for row in waste.execute('select att1 from t1'):
-#   print row
-# they will show as a list ('entry', 'entry2')
-users = []
-for row in c.execute('select login from users'):
-    users.append(row[0])
-#print (users)
-def login_attempt():
-    username = input("Enter username: ")
-    password = input("Enter password: ")
-    if username in users:
-        print ('user varified')
+#password is super<marker> manage<marker> dispatch<marker> drive<marker>
+#test driver login: oza1 password: drive1
+#test acc manager login: own23 password: manage23
+#test supervisor login: ser43 password super43
+#test dispatcher login: ach48 password dispatch48
 
 #login_attempt()
 
 
-print (hashed_pwd)
-class Waste_App(tk.Frame):
-    def __init__(self, master=None):
+class LoginFrame(Frame):
+    def __init__(self, master):
         super().__init__(master)
+
+        self.label_username = Label(self, text= "Username")
+        self.label_password = Label(self, text= "Password")
+
+        self.entry_username = Entry(self)
+        self.entry_password = Entry(self, show = "*")
+        self.label_username.grid(row = 0, sticky = E)
+        self.label_password.grid(row = 1, sticky = E)
+        self.entry_username.grid(row = 0, column = 1)
+        self.entry_password.grid(row = 1, column = 1)
+        
+        self.checkbox = Checkbutton(self, text='Keep me logged in')
+        self.checkbox.grid(columnspan = 2)
+
+        self.logbtn = Button(self, text="Login", command =self._login_btn_clicked)
+        self.logbtn.grid(columnspan = 2)
+
         self.pack()
-        self.create_widgets()
 
-    def create_widgets(self):
-        self.login = tk.Button(self, text = "LOG IN", fg = "green", bg = "black", command = self.log_in)
-        self.login.pack(side = "right", fill = 'y')
-        #self.logout = tk.Button(self, text = "LOG OUT", fg = "red", command = self.log_out)
+    def _login_btn_clicked(self):
+        username = self.entry_username.get()
+        password = self.entry_password.get()
+        
+        userLog = []
+        userRole = []
+        userPassword = []
+        userID = []
+        userSupervisor = []
+        for row in waste.execute('select login, role, password, user_id, supervisor_pid from users, personnel where user_id = PID'):
+            userLog.append(row[0])
+            userRole.append(row[1])
+            userPassword.append(row[2])
+            userID.append(row[3])
+            userSupervisor.append(row[4])
+        
+        if username == '' or password == '':
+            tm.showerror("Error","Please Enter Valid Username and Password")
 
+        for i in range(len(userLog)):
+            if username == userLog[i]:
+                hashed_pwd = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
+                if hashed_pwd == userPassword[i]:
+                    print ('bruh')
+                    self.operation_window(userRole[i], userID[i], userSupervisor[i])
+                else:
+                    tm.showerror("Incorrect Password")
+    
+    def operation_window(self, role, ID, supervisor):
+        self.myID = ID
+        self.myRole = role
+        self.mySupervisor = supervisor
+        self.master.withdraw()
+        self.newWindow = Toplevel(self.master)
+        self.newWindow.wm_title("#%s menu" % self.myRole)
+        #l = lf.Label(t, text="some text")
+        #l.pack(side ="top", fill = "both", expand = True, padx = 100, pady = 100)
+        
 
-
-        self.quit = tk.Button(self, text = "QUIT", fg = "red", command = root.destroy)
-        self.quit.pack(side = "bottom")
-
-        self.hi_there = tk.Button(self)
-        self.hi_there["text"] = "Hello\n(click me)",
-        self.hi_there["command"] = self.say_hi        
-        self.hi_there.pack(side = "top")
-
-    def say_hi(self):
-        print ("hello waste!")
-    def log_in(self):
-        print ("Log in attempted")
-    def log_out(self):
-        print ("Log out attempted")
-
-
-root = tk.Tk()
-app = Waste_App(master=root)
-app.mainloop()
+root = Tk()
+lf = LoginFrame(root)
+root.mainloop()
 
 
