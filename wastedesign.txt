@@ -1,0 +1,37 @@
+General Overview:
+
+
+waste.db as (waste) and Tkinter as (tk) -> Application GUI
+
+
+Detailed Component Design:
+
+    Components:
+        New User Button
+            - input for login/role/password
+        Login- selects user | user not found
+        Password - entered password is hashed and compared with user's
+        
+        Logout Button
+        
+        Control statement for user's role
+
+            - Window for Supervisor
+
+
+            -Window for Dispatcher
+
+
+            -Window for Drivers
+        
+
+Group Work Description:
+
+Tkinter interface - Jan
+waste data creation (full table of w passwords new users / dispatchers / supervisors)
+
+Write sql queries for different windows - Alden
+
+Other:
+We decided to use Tkinter as it is an available module on the lab machines and to challenge ourselves
+and to make something that resembles a realwork application.
