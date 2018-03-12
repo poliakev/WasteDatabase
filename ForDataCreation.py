@@ -11,6 +11,7 @@ hash_name = 'sha256'
 salt = 'ssdirf993lksiqb4'
 iterations = 100000
 
+marker = 0
 manlist = []
 drivelist = []
 suplist = []
@@ -22,9 +23,9 @@ for row in c.execute('select * from personnel p, account_managers d where p.pid 
     manlist.append(row)
 for row2 in c.execute('select * from personnel p, drivers d where p.pid = d.pid'):
     drivelist.append(row2)
-for row3 in c.execute('select * from personnel p where p.supervisor_pid = '00000''):
+for row3 in c.execute("select * from personnel p where p.supervisor_pid = '00000'"):
     suplist.append(row3)
-for row4 in c.execute('select * from personnel p where p.supervisor_pid = '11111''):
+for row4 in c.execute("select * from personnel p where p.supervisor_pid = '11111'"):
     dislist.append(row4)
 
 for driver in drivelist:
