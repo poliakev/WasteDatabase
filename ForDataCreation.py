@@ -34,7 +34,7 @@ for driver in drivelist:
     
     hashed_password = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
     statement = '''INSERT INTO users (user_id, role, login, password) values(?,?,?,?)''' #not sure if semicolon is necessary
-    conn.execute(statement, [driver[0], 'driver', (driver[1][-3:] + str(marker)), sql.Binary(hashed_password)])
+    conn.execute(statement, [driver[0], 'Driver', (driver[1][-3:] + str(marker)), sql.Binary(hashed_password)])
 
 for man in manlist:
     marker = marker + 1
@@ -42,7 +42,7 @@ for man in manlist:
     
     hashed_password = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
     statement = '''INSERT INTO users (user_id, role, login, password) values(?,?,?,?);''' #not sure if semicolon is necessary
-    conn.execute(statement, [man[0], 'account manager', (man[1][-3:] + str(marker)), sql.Binary(hashed_password)])
+    conn.execute(statement, [man[0], 'Account Manager', (man[1][-3:] + str(marker)), sql.Binary(hashed_password)])
 
 for sup in suplist:
     marker = marker + 1
@@ -50,7 +50,7 @@ for sup in suplist:
     
     hashed_password = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
     statement = '''INSERT INTO users (user_id, role, login, password) values(?,?,?,?);''' #not sure if semicolon is necessary
-    conn.execute(statement, [sup[0], 'supervisor', (sup[1][-3:] + str(marker)), sql.Binary(hashed_password)])
+    conn.execute(statement, [sup[0], 'Supervisor', (sup[1][-3:] + str(marker)), sql.Binary(hashed_password)])
 
 for dis in dislist:
     marker = marker + 1
@@ -58,19 +58,9 @@ for dis in dislist:
     
     hashed_password = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
     statement = '''INSERT INTO users (user_id, role, login, password) values(?,?,?,?);''' #not sure if semicolon is necessary
-    conn.execute(statement, [dis[0], 'dispatcher', (dis[1][-3:] + str(marker)), sql.Binary(hashed_password)])
+    conn.execute(statement, [dis[0], 'Dispatcher', (dis[1][-3:] + str(marker)), sql.Binary(hashed_password)])
 
-password = 'bruh'
-hashed_password = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
 
-statement2 = '''INSERT INTO users (user_id, role, login, password) values(?,?,?,?);''' #not sure if semicolon is necessary
-conn.execute(statement2, ['007', 'alden', 'bruh1' , sql.Binary(hashed_password)])
-statement3 = '''INSERT INTO users (user_id, role, login, password) values(?,?,?,?);''' #not sure if semicolon is necessary
-c.execute(statement3, ['006', 'jan', 'bruh2' , sql.Binary(hashed_password)])
 conn.commit()
-
-#for row4 in c.execute("select * from users"):
-#    print (row4)
-
 
 
