@@ -140,7 +140,7 @@ class LoginFrame(Frame):
             self.SelectCustomer.grid(row = 0, column = 0)
             self.CreateNewAccount = Button(self.newWindow, text = "Create New Account", command = self._create_new_acc)
             self.CreateNewAccount.grid(row = 0, column = 1)
-            self.CreateNewAgreement = Button(self.newWindow, text = "Create New Agreement", command = self._create_service_agr)
+            self.CreateNewAgreement = Button(self.newWindow, text = "Create New Agreement", command = self._create_new_agreement)
             self.CreateNewAgreement.grid(row = 1, column = 0)
             self.CreateReport = Button(self.newWindow, text = "Create Report", command = self._create_report)
             self.CreateReport.grid(row = 1, column = 1)
@@ -150,6 +150,21 @@ class LoginFrame(Frame):
         
         
 #test number for own23 : 12345698
+#For a given customer, add a new service agreement with all the required information -except for the master account number, and the service_no, which should be automatically filled in by the system; master_account is the number of the selected customer, and the service_no is a running numbers, so the next available number should be filled in.
+
+    def _create_new_agreement(self):
+        self.newagr = Toplevel(self.newWindow)
+        self.newagr.wm_title("Create New Agreement")
+        self.lablecustnum = Label(self.newagr, text = "Customer's Master Account Number ########")
+        self.inputmasternum = Entry(self.newagr)
+        self.lablecustnum.grid(row = 0, column = 0)
+        self.inputmasternum.grid(row = 0, column = 1)
+        
+        self.mode = 'newagr'
+        self.buttoncustnum = Button(self.newagr, text = "Select", command = self._customer_selected)
+        self.buttoncustnum.grid(columnspan = 2)
+
+
     def _select_cust(self):
         self.custselect = Toplevel(self.newWindow)
         self.lablecustnum = Label(self.custselect, text = "Customer's Master Account Number")
@@ -157,6 +172,7 @@ class LoginFrame(Frame):
         self.lablecustnum.grid(row = 0, column = 0)
         self.inputcustnum.grid(row = 0, column = 1)
 
+        self.mode = 'info'
         self.buttoncustnum = Button(self.custselect, text = "Select", command = self._customer_selected)
         self.buttoncustnum.grid(columnspan = 2)
         self.returnbutton = Button(self.custselect, text = "Return", command= self.custselect.destroy)
@@ -170,14 +186,24 @@ class LoginFrame(Frame):
 
         if len(self.mycustomers) == 0:
             tm.showerror("No Customers Under Selected Account Manager!")
-        else:
+        if self.mode == 'info':
             for i in range(len(self.mycustomers)):
                 if self.inputcustnum.get() == self.mycustomers[i][0]:
                     self._customer_found((self.mycustomers[i]))
+        elif self.mode == 'newagr':
+            for i in range(len(self.mycustomers)):
+                if self.inputmasternum.get() == self.mycustomers[i][0]:
+                    self._new_agreement((self.mycustomers[i]))
+
+    def _new_agreement(self, custlist):
+        #TODO
+        #find highest service num then add to it
+        #ie something like select service_no from service_agreements; (select highest service no)
+        print ('new agr')
+        
 
     def _customer_found(self, custlist):
         self.customerselected = Toplevel(self.custselect)
-        print (custlist)
 
         self.lableaccnum = Label(self.customerselected, text = "Account Number")
         self.lableaccnum.grid(row = 0, column = 0)
@@ -213,6 +239,8 @@ class LoginFrame(Frame):
         self.rlabletotalamount = Label(self.customerselected, text = custlist[7])
         self.rlabletotalamount.grid(row = 1, column = 7)
         
+        self.returnbutton = Button(self.customerselected, text = "Return", command= self.customerselected.destroy)
+        self.returnbutton.grid(columnspan = 3)
         
         #TODO make scrollable list with all agreements associated with master account
 
@@ -274,10 +302,6 @@ class LoginFrame(Frame):
         statementacc = '''INSERT INTO accounts (account_no, account_mgr, customer_name, contact_info, customer_type, start_date, end_date, total_amount) values(?,?,?,?,?,?,?,?)'''
         waste.execute(statementacc, [account_number, account_mgr, cust_name, contact_info, customer_type, start_date, end_date, total_amount])
         w.commit()
-
-    def _create_service_agr(self):
-        #todo
-        print ('you tired bro')
 
     def _create_report(self):
         #todo
