@@ -136,7 +136,7 @@ class LoginFrame(Frame):
         self.newWindow.wm_title("#%s menu" % self.myRole)
 
         if role == 'account manager':
-            self.SelectCustomer = Button(self.newWindow, text = "Select Customer", command = self._select_cust_clicked)
+            self.SelectCustomer = Button(self.newWindow, text = "Select Customer", command = self._select_cust)
             self.SelectCustomer.grid(row = 0, column = 0)
             self.CreateNewAccount = Button(self.newWindow, text = "Create New Account", command = self._create_new_acc)
             self.CreateNewAccount.grid(row = 0, column = 1)
@@ -145,20 +145,77 @@ class LoginFrame(Frame):
             self.CreateReport = Button(self.newWindow, text = "Create Report", command = self._create_report)
             self.CreateReport.grid(row = 1, column = 1)
 
-            #move the following into select customer window with a withdraw()
-            #self.lableselectcust = Label(self.newWindow, text = "Enter master account number")
-            #self.inputmasternum = Entry(self.newWindow)
-            #self.lableselectcust.grid(row = 0, column = 1)
-            #self.inputmasternum.grid(row = 1, column = 1)
         self.returnbutton = Button(self.newWindow, text = "Log Out", command= self.newWindow.destroy)
         self.returnbutton.grid(columnspan = 6)
         
-        #self.scrollbar = ScrollBar(self)
-        #self.scrollbar.pack(side=RIGHT, fill = 'y')
-       
-        #self.listbox = Listbox(self)
-        #self.listbox.pack() 
-        # test master acc # 87625036 for own23
+        
+#test number for own23 : 12345698
+    def _select_cust(self):
+        self.custselect = Toplevel(self.newWindow)
+        self.lablecustnum = Label(self.custselect, text = "Customer's Master Account Number")
+        self.inputcustnum = Entry(self.custselect)
+        self.lablecustnum.grid(row = 0, column = 0)
+        self.inputcustnum.grid(row = 0, column = 1)
+
+        self.buttoncustnum = Button(self.custselect, text = "Select", command = self._customer_selected)
+        self.buttoncustnum.grid(columnspan = 2)
+        self.returnbutton = Button(self.custselect, text = "Return", command= self.custselect.destroy)
+        self.returnbutton.grid(columnspan = 3)
+
+    def _customer_selected(self):
+        self.mycustomers = []
+        statement = ('select * from accounts where account_mgr = ?')
+        for row in waste.execute(statement, [self.myID]):
+            self.mycustomers.append(row)
+
+        if len(self.mycustomers) == 0:
+            tm.showerror("No Customers Under Selected Account Manager!")
+        else:
+            for i in range(len(self.mycustomers)):
+                if self.inputcustnum.get() == self.mycustomers[i][0]:
+                    self._customer_found((self.mycustomers[i]))
+
+    def _customer_found(self, custlist):
+        self.customerselected = Toplevel(self.custselect)
+        print (custlist)
+
+        self.lableaccnum = Label(self.customerselected, text = "Account Number")
+        self.lableaccnum.grid(row = 0, column = 0)
+        self.lableaccmgr = Label(self.customerselected, text = "Account Manager")
+        self.lableaccmgr.grid(row = 0, column = 1)
+        self.lableaccname = Label(self.customerselected, text = "Customer Name")
+        self.lableaccname.grid(row = 0, column = 2)
+        self.lablecustname = Label(self.customerselected, text = "Customer Number")
+        self.lablecustname.grid(row = 0, column = 3)
+        self.lablecusttype = Label(self.customerselected, text = "Customer Type")
+        self.lablecusttype.grid(row = 0, column = 4)
+        self.lablestartdate = Label(self.customerselected, text = "Start Date")
+        self.lablestartdate.grid(row = 0, column = 5)
+        self.lableenddate = Label(self.customerselected, text = "End Date")
+        self.lableenddate.grid(row = 0, column = 6)
+        self.labletotalamount = Label(self.customerselected, text = "Total Amount")
+        self.labletotalamount.grid(row = 0, column = 7)
+
+        self.rlableaccnum = Label(self.customerselected, text = custlist[0])
+        self.rlableaccnum.grid(row = 1, column = 0)
+        self.rlableaccmgr = Label(self.customerselected, text = custlist[1])
+        self.rlableaccmgr.grid(row = 1, column = 1)
+        self.rlableaccname = Label(self.customerselected, text = custlist[2])
+        self.rlableaccname.grid(row = 1, column = 2)
+        self.rlablecustname = Label(self.customerselected, text = custlist[3])
+        self.rlablecustname.grid(row = 1, column = 3)
+        self.rlablecusttype = Label(self.customerselected, text = custlist[4])
+        self.rlablecusttype.grid(row = 1, column = 4)
+        self.rlablestartdate = Label(self.customerselected, text = custlist[5])
+        self.rlablestartdate.grid(row = 1, column = 5)
+        self.rlableenddate = Label(self.customerselected, text = custlist[6])
+        self.rlableenddate.grid(row = 1, column = 6)
+        self.rlabletotalamount = Label(self.customerselected, text = custlist[7])
+        self.rlabletotalamount.grid(row = 1, column = 7)
+        
+        
+        #TODO make scrollable list with all agreements associated with master account
+
     def _create_new_acc(self):
         self.newacc = Toplevel(self)
         self.newacc.wm_title("Create Account")
@@ -225,50 +282,6 @@ class LoginFrame(Frame):
     def _create_report(self):
         #todo
         print ('give up')
-
-    def _select_cust_clicked(self):
-        #self.custselect = Toplevel(self.newWindow)
-        #self.customer = Entry(self.custselect)
-        #self.customer.grid(columnspan = 2)
-
-        statement = ('select account_no from accounts where account_mgr = ?')
-        for row in waste.execute(statement, [self.myID]):
-            self.mycustomers.append(row[0])
-        
-        #self.customerselected = Button(self.custselect, text = "select", command = self._select_customer_account())
-        #self.customerselected.grid(columnspan = 2)
-
-    
-    def _select_customer_account(self):
-        self.custWindow = Toplevel(self.newWindow)
-        self.custWindow.wm_title("Account number #%s" % self.inputmasternum.get())
-        
-
-        
-
-       # for i in range(len(self.mycustomers)):
-            #if self.inputmasternum.get() == self.mycustomers[i]:
-                #custstatement = ('select * from accounts where account_no = ?')
-                #cust = waste.execute(statement, [self.inputmasternum.get()])
-                #self.custl1 = Label(self.newWindow, text = "account number")
-                #self.custl1.grid(row = 0, column = 0)
-               #self.custl2 = Label(self.newWindow, text = "account manager")
-               #self.custl2.grid(row = 0, column = 1)
-               #self.custl3 = Label(self.newWindow, text = "customer name")
-               #self.custl3.grid(row = 0, column = 2)
-               #self.custl4 = Label(self.newWindow, text = "contact info")
-               #self.custl4.grid(row = 0, column = 3)
-               #self.custl5 = Label(self.newWindow, text = "customer type")
-               #self.custl5.grid(row = 0, column = 4)
-               #self.custl6 = Label(self.newWindow, text = "start date")
-               #self.custl6.grid(row = 0, column = 5)
-               #self.custl7 = Label(self.newWindow, text = "end date")
-               #self.custl7.grid(row = 0, column = 6)
-               #self.custl8 = Label(self.newWindow, text = "total amount")
-               #self.custl8.grid(row = 0, column = 7)
-        
-
-
 
 
 root = Tk()
