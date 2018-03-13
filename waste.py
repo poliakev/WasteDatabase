@@ -216,6 +216,8 @@ class LoginFrame(Frame):
         self.buttoncustnum.grid(columnspan = 2)
 
 
+
+    #for testing on own23 use number : 19924453
     def _select_cust(self):
         self.custselect = Toplevel(self.newWindow)
         self.lablecustnum = Label(self.custselect, text = "Customer's Master Account Number")
@@ -230,6 +232,7 @@ class LoginFrame(Frame):
         self.returnbutton.grid(columnspan = 3)
 
     def _customer_selected(self):
+        print ('here')
         self.mycustomers = []
         statement = ('select * from accounts where account_mgr = ?')
         for row in waste.execute(statement, [self.myID]):
