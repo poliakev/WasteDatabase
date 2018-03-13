@@ -37,20 +37,71 @@ class LoginFrame(Frame):
         self.entry_username.grid(row = 0, column = 1)
         self.entry_password.grid(row = 1, column = 1)      
         
-        self.checkbox = Checkbutton(self, text='Keep me logged in')
-        self.checkbox.grid(columnspan = 2)
+        self.newUser = Button(self, text = "Create New User", command = self._createUser)
+        self.newUser.grid(row = 2 , column = 0)
 
-        self.logbtn = Button(self, text = "Login", command = self._login_btn_clicked)
-        self.logbtn.grid(columnspan = 2)
+        self.logbtn = Button(self, text = "Login", command = self._menu)
+        self.logbtn.grid(row = 2, column = 1)
         self.quit = Button(self, text = "QUIT", fg = "red", command = root.destroy)
-        self.quit.grid(columnspan = 2)
+        self.quit.grid(row = 2, column = 2)
 
 
         self.mycustomers = [] #maybe shouldn't be here o well
 
         self.pack()
 
-    def _login_btn_clicked(self):
+    def _createUser(self):
+        self.userWindow = Toplevel(self)
+        self.userWindow.wm_title("Create New User")
+        self.newlabel_username = Label(self.userWindow, text= "New User")
+        self.newlabel_role = Label(self.userWindow, text= "Role")
+        self.newlabel_password = Label(self.userWindow, text= "Password")
+        self.newlabel_confirmpassword = Label(self.userWindow, text= "Confirm Password")
+
+
+        self.newentry_username = Entry(self.userWindow)
+        self.newrole_username = Entry(self.userWindow)
+        self.newentry_password = Entry(self.userWindow, show = "*")
+        self.confirmnewentry_password = Entry(self.userWindow, show = "*")
+        self.newlabel_username.grid(row = 0, sticky = E)
+        self.newlabel_role.grid(row = 1, sticky = E)
+        self.newlabel_password.grid(row = 2, sticky = E)        
+        self.newlabel_confirmpassword.grid(row = 3, sticky = E)
+        self.newentry_username.grid(row = 0, column = 1)
+        self.newrole_username.grid(row = 1, column = 1)
+        self.newentry_password.grid(row = 2, column = 1)
+        self.confirmnewentry_password.grid(row = 3, column = 1)
+        
+        
+        self.createbtn = Button(self.userWindow, text = "Create", command = self._create_btn_clicked)
+        self.createbtn.grid(row = 4, column = 0)
+
+        self.quit = Button(self.userWindow, text = "QUIT", fg = "red", command = self._withdraw)
+        self.quit.grid(row = 4, column = 1)
+        
+    def _create_btn_clicked(self):
+        self.nuser = self.newentry_username.get()
+        self.nrole = self.newrole_username.get()
+        self.npassword = self.newentry_password.get()
+        self.nconpassword = self.confirmnewentry_password.get()
+        self.nid = 25252
+        
+        if self.npassword == self.nconpassword and self.nuser != '' and self.nrole != '':
+            nhashed_password = pbkdf2_hmac(hash_name, bytearray(self.npassword, 'ascii'), bytearray(salt, 'ascii'), iterations)
+            statement = '''INSERT INTO users (user_id, role, login, password) values(?,?,?,?);''' #not sure if semicolon is necessary
+            #self.generateID()
+            waste.execute(statement, [self.nid, self.nrole, self.nuser, sql.Binary(nhashed_password)])
+            #don't forget peronnel........
+        
+
+            w.commit()
+
+
+    def _withdraw(self):
+        self.userWindow.withdraw()
+        
+
+    def _menu(self):
         username = self.entry_username.get()
         password = self.entry_password.get()
         
@@ -58,13 +109,13 @@ class LoginFrame(Frame):
         userRole = []
         userPassword = []
         userID = []
-        userSupervisor = []
-        for row in waste.execute('select login, role, password, user_id, supervisor_pid from users, personnel where user_id = PID'):
+        #userSupervisor = []
+        for row in waste.execute('select login, role, password, user_id from users'):
             userLog.append(row[0])
             userRole.append(row[1])
             userPassword.append(row[2])
             userID.append(row[3])
-            userSupervisor.append(row[4])
+            #userSupervisor.append(row[4])
         
         if username == '' or password == '':
             tm.showerror("Error","Please Enter Valid Username and Password")
@@ -73,39 +124,29 @@ class LoginFrame(Frame):
             if username == userLog[i]:
                 hashed_pwd = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
                 if hashed_pwd == userPassword[i]:
-                    self.operation_window(userRole[i], userID[i], userSupervisor[i])
+                    self.menuWindow = Toplevel(self)
+
+                    self.myID = userRole[i]
+                    self.myRole = userID[i]
+
+                    self.menuWindow.wm_title("#%s menu" % self.myRole)
+
+                    #example button
+                    #self.createbtn = Button(self.userWindow, text = "Create", command = self._create_btn_clicked)
+
+                    self.SelectCustomer = Button(self.menuWindow, text = "Select Customer", command = self._select_cust_clicked)
+                    self.SelectCustomer.grid(row = 0, column = 0)
+                    self.CreateNewAccount = Button(self.menuWindow, text = "Create New Account", command = self._create_new_acc)
+                    self.CreateNewAccount.grid(row = 0, column = 1)
+                    self.CreateNewAgreement = Button(self.menuWindow, text = "Create New Agreement", command = self._create_service_agr)
+                    self.CreateNewAgreement.grid(row = 1, column = 0)
+                    self.CreateReport = Button(self.menuWindow, text = "Create Report", command = self._create_report)
+                    self.CreateReport.grid(row = 1, column = 1)
+
+                    self.returnbutton = Button(self.menuWindow, text = "Return", command= self.menuWindow.destroy)
+                    self.returnbutton.grid(columnspan = 6)
                 else:
-                    tm.showerror("Incorrect Password")
-    
-    def operation_window(self, role, ID, supervisor):
-        self.myID = ID
-        self.myRole = role
-        self.mySupervisor = supervisor
-        self.newWindow = Toplevel(self.master)
-        self.newWindow.wm_title("#%s menu" % self.myRole)
-
-        if role == 'account manager':
-            self.SelectCustomer = Button(self.newWindow, text = "Select Customer", command = self._select_cust_clicked())
-            self.SelectCustomer.grid(row = 0, column = 0)
-            #self.CreateNewAccount = Button(self.newWindow, text = "Create New Account", command = self._create_new_acc())
-            #self.CreateNewAccount.grid(row = 0, column = 1)
-            #self.CreateNewAccount.pack()
-            #self.CreateNewAgreement = Button(self.newWindow, text = "Create New Agreement", command = self._create_service_agr())
-            #self.CreateNewAgreement.grid(row = 1, column = 0)
-            #self.CreateNewAgreement.pack()
-            #self.CreateReport = Button(self.newWindow, text = "Create Report", command = self._create_report())
-            #self.CreateReport.grid(row = 1, column = 1)
-            #self.CreateNewReport.pack()
-
-            #move the following into select customer window with a withdraw()
-            #self.lableselectcust = Label(self.newWindow, text = "Enter master account number")
-            #self.inputmasternum = Entry(self.newWindow)
-            #self.lableselectcust.grid(row = 0, column = 1)
-            #self.inputmasternum.grid(row = 1, column = 1)
-            #self.selectcust = Button(self.newWindow, text = "Select", command = self._select_cust_clicked(self.myID))
-            #self.selectcust.grid(columnspan = 2)
-            self.returnbutton = Button(self.newWindow, text = "Return", command= self.newWindow.destroy)
-            self.returnbutton.grid(columnspan = 2)
+                    tm.showerror("Incorrect Password")   
         
         #self.scrollbar = ScrollBar(self)
         #self.scrollbar.pack(side=RIGHT, fill = 'y')
@@ -114,8 +155,12 @@ class LoginFrame(Frame):
         #self.listbox.pack() 
         # test master acc # 87625036 for own23
     def _create_new_acc(self):
-        #todo
-        print ('hi')
+        print ('ok')
+        #self.lableselectcust = Label(self.newWindow, text = "Enter master account number")
+        #self.inputmasternum = Entry(self.newWindow)
+        #self.lableselectcust.grid(row = 0, column = 0)
+        #self.inputmasternum.grid(row = 0, column = 1)
+        #print ('hi')
 
     def _create_service_agr(self):
         #todo
