@@ -250,7 +250,7 @@ class LoginFrame(Frame):
                     self._new_agreement((self.mycustomers[i]))
 
     def _new_agreement(self, custlist):
-        #test number for own23 : 12345698
+        #test number for own23 : 19924453
         #For a given customer, add a new service agreement with all the required information -except for the master account number, and the service_no, which should be automatically filled in by the system; master_account is the number of the selected customer, and the service_no is a running numbers, so the next available number should be filled in.
         #TODO
         #find highest service num then add to it and pull master_account number from custlist
@@ -295,9 +295,15 @@ class LoginFrame(Frame):
         self.rlabletotalamount = Label(self.customerselected, text = custlist[7])
         self.rlabletotalamount.grid(row = 1, column = 7)
         
+        
+        
+        self.scroll = Scrollbar(self.customerselected)
+        self.scroll.grid(rowspan = 10, column = 8)
+
+        self.agreelist = Listbox(self.customerselected, yscrollcommand = self.scroll.set)
+
         self.returnbutton = Button(self.customerselected, text = "Return", command= self.customerselected.destroy)
         self.returnbutton.grid(columnspan = 3)
-        
         #TODO make scrollable list with all agreements associated with master account
 
     def _create_new_acc(self):
