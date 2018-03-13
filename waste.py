@@ -134,7 +134,7 @@ class LoginFrame(Frame):
         self.newWindow = Toplevel(self)
         self.newWindow.wm_title("#%s menu" % self.myRole)
 
-        if role == 'Account Manager':
+        if role == 'account manager':
             self.userMode = 'account manager'
             self.SelectCustomer = Button(self.newWindow, text = "Select Customer", command = self._select_cust)
             self.SelectCustomer.grid(row = 0, column = 0)
@@ -144,7 +144,7 @@ class LoginFrame(Frame):
             self.CreateNewAgreement.grid(row = 1, column = 0)
             self.CreateReport = Button(self.newWindow, text = "Create Report", command = self._create_report)
             self.CreateReport.grid(row = 1, column = 1)
-        elif role == 'Supervisor':
+        elif role == 'supervisor':
             self.userMode = 'supervisor'
             self.Createnewacc = Button(self.newWindow, text = "Create New Account", command = self._create_new_acc)
             self.Createnewacc.grid(row = 0, column = 0)
@@ -152,12 +152,12 @@ class LoginFrame(Frame):
             self.Createrep.grid(row = 0, column = 1)
             self.Createmanrep = Button(self.newWindow, text = "Create Manager Report", command = self._create_mgr_report)
             self.Createmanrep.grid(row = 1, column = 0)
-        elif role == 'Driver':
+        elif role == 'driver':
             self.userMode = 'driver'
             self.SelectCustomer = Button(self.newWindow, text = "Task List", command = self._task_list)
             self.SelectCustomer.grid(row = 0, column = 0)
 
-        elif role == 'Dispatcher':
+        elif role == 'dispatcher':
             self.userMode = 'dispatcher'
             self.Selectserv = Button(self.newWindow, text = "Select Service Agreement", command = self._select_service)
             self.Selectserv.grid(row = 0, column = 0)
