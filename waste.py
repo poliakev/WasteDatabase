@@ -135,22 +135,22 @@ class LoginFrame(Frame):
         self.newWindow = Toplevel(self)
         self.newWindow.wm_title("#%s menu" % self.myRole)
 
-        #if role == 'account manager':
-        self.SelectCustomer = Button(self.newWindow, text = "Select Customer", command = self._select_cust_clicked)
-        self.SelectCustomer.grid(row = 0, column = 0)
-        self.CreateNewAccount = Button(self.newWindow, text = "Create New Account", command = self._create_new_acc)
-        self.CreateNewAccount.grid(row = 0, column = 1)
-        self.CreateNewAgreement = Button(self.newWindow, text = "Create New Agreement", command = self._create_service_agr)
-        self.CreateNewAgreement.grid(row = 1, column = 0)
-        self.CreateReport = Button(self.newWindow, text = "Create Report", command = self._create_report)
-        self.CreateReport.grid(row = 1, column = 1)
+        if role == 'account manager':
+            self.SelectCustomer = Button(self.newWindow, text = "Select Customer", command = self._select_cust_clicked)
+            self.SelectCustomer.grid(row = 0, column = 0)
+            self.CreateNewAccount = Button(self.newWindow, text = "Create New Account", command = self._create_new_acc)
+            self.CreateNewAccount.grid(row = 0, column = 1)
+            self.CreateNewAgreement = Button(self.newWindow, text = "Create New Agreement", command = self._create_service_agr)
+            self.CreateNewAgreement.grid(row = 1, column = 0)
+            self.CreateReport = Button(self.newWindow, text = "Create Report", command = self._create_report)
+            self.CreateReport.grid(row = 1, column = 1)
 
             #move the following into select customer window with a withdraw()
             #self.lableselectcust = Label(self.newWindow, text = "Enter master account number")
             #self.inputmasternum = Entry(self.newWindow)
             #self.lableselectcust.grid(row = 0, column = 1)
             #self.inputmasternum.grid(row = 1, column = 1)
-        self.returnbutton = Button(self.newWindow, text = "Return", command= self.newWindow.destroy)
+        self.returnbutton = Button(self.newWindow, text = "Log Out", command= self.newWindow.destroy)
         self.returnbutton.grid(columnspan = 6)
         
         #self.scrollbar = ScrollBar(self)
@@ -160,12 +160,63 @@ class LoginFrame(Frame):
         #self.listbox.pack() 
         # test master acc # 87625036 for own23
     def _create_new_acc(self):
-        print ('ok')
-        #self.lableselectcust = Label(self.newWindow, text = "Enter master account number")
-        #self.inputmasternum = Entry(self.newWindow)
-        #self.lableselectcust.grid(row = 0, column = 0)
-        #self.inputmasternum.grid(row = 0, column = 1)
-        #print ('hi')
+        self.newacc = Toplevel(self)
+        self.newacc.wm_title("Create Account")
+        self.lablecreatenum = Label(self.newacc, text = "Master Account Number ######## ")
+        self.inputmasternum = Entry(self.newacc)
+        self.lablecreatenum.grid(row = 0, column = 0)
+        self.inputmasternum.grid(row = 0, column = 1)
+        
+        self.accman = self.myID
+
+        self.lablecustname = Label(self.newacc, text = "Customer Name")
+        self.inputcustname = Entry(self.newacc)
+        self.lablecustname.grid(row = 1, column = 0)
+        self.inputcustname.grid(row = 1, column = 1)
+
+        self.lablecontactinfo = Label(self.newacc, text = "Phone (###) ###-####")
+        self.inputcontactinfo = Entry(self.newacc)
+        self.lablecontactinfo.grid(row = 2, column = 0)
+        self.inputcontactinfo.grid(row = 2, column = 1)
+    
+        self.lablecusttype = Label(self.newacc, text = "Customer Type")
+        self.inputcusttype = Entry(self.newacc)
+        self.lablecusttype.grid(row = 3, column = 0)
+        self.inputcusttype.grid(row = 3, column = 1)
+        
+        #get time module and fix this
+        self.lablestartdate = Label(self.newacc, text = "Start Date (yyyy-mm-dd)")
+        self.inputstartdate = Entry(self.newacc)
+        self.lablestartdate.grid(row = 4, column = 0)
+        self.inputstartdate.grid(row = 4, column = 1)
+
+        self.lableenddate = Label(self.newacc, text = "End Date (yyyy-mm-dd)")
+        self.inputenddate = Entry(self.newacc)
+        self.lableenddate.grid(row = 5, column = 0)
+        self.inputenddate.grid(row = 5, column = 1)
+
+        self.custtotal = 0    
+
+        self.selectacc = Button(self.newacc, text = "Create Account", command = self._makeaccount)
+        self.selectacc.grid(row = 6, column = 0)
+
+        self.exitcreate = Button(self.newacc, text = "Return", command= self.newacc.destroy)
+        self.exitcreate.grid(row = 6, column = 1)
+        
+    
+    def _makeaccount(self):
+        account_number = self.inputmasternum.get()
+        account_mgr = self.accman
+        cust_name = self.inputcustname.get()
+        contact_info = self.inputcontactinfo.get()
+        customer_type = self.inputcusttype.get()
+        start_date = self.inputstartdate.get()
+        end_date = self.inputenddate.get()
+        total_amount = self.custtotal
+        
+        statementacc = '''INSERT INTO accounts (account_no, account_mgr, customer_name, contact_info, customer_type, start_date, end_date, total_amount) values(?,?,?,?,?,?,?,?)'''
+        waste.execute(statementacc, [account_number, account_mgr, cust_name, contact_info, customer_type, start_date, end_date, total_amount])
+        w.commit()
 
     def _create_service_agr(self):
         #todo
