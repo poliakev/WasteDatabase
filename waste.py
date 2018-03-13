@@ -124,29 +124,34 @@ class LoginFrame(Frame):
             if username == userLog[i]:
                 hashed_pwd = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
                 if hashed_pwd == userPassword[i]:
-                    self.menuWindow = Toplevel(self)
-
-                    self.myID = userRole[i]
-                    self.myRole = userID[i]
-
-                    self.menuWindow.wm_title("#%s menu" % self.myRole)
-
-                    #example button
-                    #self.createbtn = Button(self.userWindow, text = "Create", command = self._create_btn_clicked)
-
-                    self.SelectCustomer = Button(self.menuWindow, text = "Select Customer", command = self._select_cust_clicked)
-                    self.SelectCustomer.grid(row = 0, column = 0)
-                    self.CreateNewAccount = Button(self.menuWindow, text = "Create New Account", command = self._create_new_acc)
-                    self.CreateNewAccount.grid(row = 0, column = 1)
-                    self.CreateNewAgreement = Button(self.menuWindow, text = "Create New Agreement", command = self._create_service_agr)
-                    self.CreateNewAgreement.grid(row = 1, column = 0)
-                    self.CreateReport = Button(self.menuWindow, text = "Create Report", command = self._create_report)
-                    self.CreateReport.grid(row = 1, column = 1)
-
-                    self.returnbutton = Button(self.menuWindow, text = "Return", command= self.menuWindow.destroy)
-                    self.returnbutton.grid(columnspan = 6)
+                    self.operation_window(userRole[i], userID[i])
                 else:
-                    tm.showerror("Incorrect Password")   
+                    tm.showerror("Incorrect Password")
+    
+    def operation_window(self, role, ID):
+        self.myID = ID
+        self.myRole = role
+        #self.mySupervisor = supervisor
+        self.newWindow = Toplevel(self)
+        self.newWindow.wm_title("#%s menu" % self.myRole)
+
+        #if role == 'account manager':
+        self.SelectCustomer = Button(self.newWindow, text = "Select Customer", command = self._select_cust_clicked)
+        self.SelectCustomer.grid(row = 0, column = 0)
+        self.CreateNewAccount = Button(self.newWindow, text = "Create New Account", command = self._create_new_acc)
+        self.CreateNewAccount.grid(row = 0, column = 1)
+        self.CreateNewAgreement = Button(self.newWindow, text = "Create New Agreement", command = self._create_service_agr)
+        self.CreateNewAgreement.grid(row = 1, column = 0)
+        self.CreateReport = Button(self.newWindow, text = "Create Report", command = self._create_report)
+        self.CreateReport.grid(row = 1, column = 1)
+
+            #move the following into select customer window with a withdraw()
+            #self.lableselectcust = Label(self.newWindow, text = "Enter master account number")
+            #self.inputmasternum = Entry(self.newWindow)
+            #self.lableselectcust.grid(row = 0, column = 1)
+            #self.inputmasternum.grid(row = 1, column = 1)
+        self.returnbutton = Button(self.newWindow, text = "Return", command= self.newWindow.destroy)
+        self.returnbutton.grid(columnspan = 6)
         
         #self.scrollbar = ScrollBar(self)
         #self.scrollbar.pack(side=RIGHT, fill = 'y')
