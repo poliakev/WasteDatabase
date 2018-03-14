@@ -191,14 +191,31 @@ class LoginFrame(Frame):
             #5The container ID of the container to be picked up.
 
     def _create_mgr_report(self):
+        self.newmanrep = Toplevel(self.newWindow)
+        self.newmanrep.wm_title("Manager Report")
+
+        self.allman = []
+        self.myman = []
+
+        statement = ('select account_mgr, count(distinct account_no), count(service_no), sum(price), sum(internal_cost), (sum(price) - sum(internal_cost)) as num from accounts a, service_agreements sa where sa.master_account = a.account_no group by account_mgr order by (num)')
+            
+        statement2 = ('select pid from personnel p where supervisor_pid = ?')
+        for row in waste.execute(statement):
+            self.allman.append(row)
+    
+        for row in waste.execute(statement2, [self.myID]):
+            self.myman.append(row[0])
+
+        self.manlist = Listbox(self.newmanrep, width = 140, height = 10)
+        self.manlist.grid(columnspan = 7)
+        
+        self.manlist.insert(END, " Account Manager ID " + " Total Master Agreements " + " Total Service Agreements " + " Sum Prices " + " Sum Internal Cost ")
         
 
-        self.agreelist = Listbox(self.customerselected, width = 140, height = 10)
-        self.agreelist.grid(columnspan = 7)
-        for agreement in self.myagreements:
-            self.agreelist.insert(END, " " + str(agreement[0]) + " | " + str(agreement[2]) + " | " + str(agreement[3]) + " | " + str(agreement[4]) + " | " + str(agreement[5]) + " | " +  str(agreement[6]) + " | " + str(agreement[7]) + " | ")
-
-        self.returnbutton = Button(self.customerselected, text = "Return", command= self.customerselected.destroy)
+        for i in range(len(self.allman)):
+            if self.allman[i][0] in self.myman:
+                self.manlist.insert(END, "          " + str(self.allman[i][0]) + "             |               " + str(self.allman[i][1]) + "                     |                 " + str(self.allman[i][2]) + "                    | " + str(self.allman[i][3]) + "      |    " + str(self.allman[i][4]) + "  ")
+        self.returnbutton = Button(self.newmanrep, text = "Return", command= self.customerselected.destroy)
         self.returnbutton.grid(columnspan = 3)
 
         #TODO
