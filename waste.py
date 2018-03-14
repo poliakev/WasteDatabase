@@ -2,6 +2,8 @@ from hashlib import pbkdf2_hmac
 from tkinter import *
 import tkinter.messagebox as tm
 
+from datetime import datetime
+
 import sqlite3 as sql
 w = sql.connect('waste.db')
 waste = w.cursor()
@@ -166,9 +168,7 @@ class LoginFrame(Frame):
         self.returnbutton = Button(self.newWindow, text = "Log Out", command= self.newWindow.destroy)
         self.returnbutton.grid(columnspan = 6)
 
-    def _select_service(self):
-        print ('service')
-        #TODO
+#TODO
         #The dispatcher must be able to first select a service agreement. Then, he or she should be given options to select driver, truck, and a container to be dropped off and picked up with the following constraints:
         #1 if a driver is selected who owns a truck, that truck should be automatically selected; otherwise the dispatcher also must select a truck.
 
@@ -177,18 +177,74 @@ class LoginFrame(Frame):
         #3 The dispatcher should select the container to be dropped off from a list of available containers; this list should only show available containers that can hold the appropriate waste type, given in the service agreement. A container is available, if it is not currently located at a customer's service agreement location and not already scheduled to be dropped off at a future date.
 
         #4 For the date_time entry it is sufficient to just enter a date string in the form ' YYYY-MM-DD' (i.e., not including time information).
-            
+
+    def _select_service(self):
+        self.selserve = Toplevel(self.newWindow)
+        self.selserve.wm_title("Dispatch Select Service")
+        
+    
+        self.labelserviceno = Label(self.selserve, text = "Enter Service Number")
+        self.labelserviceno.grid(row = 0, column = 0)
+        self.inputserviceno = Entry(self.selserve)
+        self.inputserviceno.grid(row = 0, column = 1)
+        self.butselect = Button(self.selserve, text = 'Select', command = self._selected_service_no)
+        self.butselect.grid(columnspan = 2)
+        self.exitcreate = Button(self.selserve, text = "Return", command= self.selserve.destroy)
+        self.exitcreate.grid(columnspan = 2)
+
+    def _selected_service_no(self):
+        self.allservicenumbers = []
+        statement = ('''select service_no from service_agreements''')
+        for row in waste.execute(statement):
+            self.allservicenumbers.append(row[0])
+        self.selected = self.inputserviceno.get()
+        if self.selected in self.allservicenumbers:
+            print ('hi')            
 
     def _task_list(self):
-        print ('task list')
-        #TODO
-        #For a given date range, list all the tours that they have been assigned to. The information about a tour consists of the the following:
+        self.tasklist = Toplevel(self.newWindow)
+        self.tasklist.wm_title("Task List")
+        
+        self.labeldaterange = Label(self.tasklist, text = "Enter Date Range")
+        self.labeldaterange.grid(columnspan = 2)
+        self.inputdatestart = Entry(self.tasklist)
+        self.inputdatestart.grid(row = 1, column = 0)
+        self.inputdateend = Entry(self.tasklist)
+        self.inputdateend.grid(row = 1, column = 1)
+            
 
-            #1The location where to exchange containers.
-            #2The local contact information for the service agreement.
-            #3The waste_type involved in the service agreement.
-            #4The container ID of the container to be dropped off.
-            #5The container ID of the container to be picked up.
+
+        self.taskbut = Button(self.tasklist, text = "Enter", command = self._gen_task_list)
+        self.taskbut.grid(columnspan = 2)
+
+        self.exitcreate = Button(self.tasklist, text = "Return", command= self.tasklist.destroy)
+        self.exitcreate.grid(columnspan = 2)
+
+    def _gen_task_list(self):
+        self.gentasks = Toplevel(self.tasklist)
+        self.gentasks.wm_title("Manager Report")
+
+        self.startdatetime = self.inputdatestart.get()
+        self.enddatetime = self.inputdateend.get()
+        self.realstartdatetime = datetime.strptime(self.startdatetime, '%H %M %S %Y %m %d')
+        self.realenddatetime = datetime.strptime(self.enddatetime, '%H %M %S %Y %m %d')
+
+        self.servicelist = []
+
+        statement = ('''select location, local_contact, waste_type, cid_drop_off, cid_pick_up from service_agreements sa, service_fulfillments sf where sf.service_no = sa.service_no and sf.date_time > ? and sf.date_time < ? and sf.driver_id = ?''')
+        for row in waste.execute(statement, [self.realstartdatetime, self.realenddatetime, self.myID]):
+            self.servicelist.append(row)
+        
+        self.servelist = Listbox(self.gentasks, width = 140, height = 10)
+        self.servelist.grid(columnspan = 7)
+        
+        self.servelist.insert(END, "location | local_contact | waste type | cid_drop_off | cid_pick_up")
+
+        for i in range(len(self.servicelist)):
+            self.servelist.insert(END, str(self.servicelist[i][0]) + " | " + str(self.servicelist[i][1]) + " | " + str(self.servicelist[i][2]) + " | " + str(self.servicelist[i][3]) + " | " + str(self.servicelist[i][4]))
+
+        self.exitcreate = Button(self.gentasks, text = "Return", command= self.gentasks.destroy)
+        self.exitcreate.grid(columnspan = 2)
 
     def _create_mgr_report(self):
         self.newmanrep = Toplevel(self.newWindow)
@@ -215,12 +271,9 @@ class LoginFrame(Frame):
         for i in range(len(self.allman)):
             if self.allman[i][0] in self.myman:
                 self.manlist.insert(END, "          " + str(self.allman[i][0]) + "             |               " + str(self.allman[i][1]) + "                     |                 " + str(self.allman[i][2]) + "                    | " + str(self.allman[i][3]) + "      |    " + str(self.allman[i][4]) + "  ")
-        self.returnbutton = Button(self.newmanrep, text = "Return", command= self.customerselected.destroy)
+        self.returnbutton = Button(self.newmanrep, text = "Return", command= self.newmanrep.destroy)
         self.returnbutton.grid(columnspan = 3)
 
-        #TODO
-        #Create a summary report that contains the following summary information for each of the account managers that the supervisor supervises: the total number of master agreements for an account manager, the total number of service agreements, the sum of the prices and the sum of the internal cost of all service agreements for the account manager. The report should be sorted by the difference between the sum of prices and the sum of internal costs.
-        
     def _create_report(self):
         self.newrep = Toplevel(self.newWindow)
         self.newrep.wm_title("Customer Report")
@@ -238,12 +291,6 @@ class LoginFrame(Frame):
         self.buttoncustnum.grid(columnspan = 2)
         self.exitcreate = Button(self.newrep, text = "Return", command= self.newrep.destroy)
         self.exitcreate.grid(columnspan = 2)
-        #check userMode if 'account manager':
-        #TODO
-        #Create a summary report for a single customer, listing the total number of service agreements, the sum of the prices and the sum of the internal cost of the service agreements, as well as the number of different waste types that occur in the service agreements.
-        #call self._customer_selected and set self.mode to report
-        #check userMode if 'supervisor'
-        #Same as account managers, but with the following differences: 1) the supervisor should be able to select a customer from the customers of all account managers that the supervisor supervises; 2) the report should also include the name of the account manager who manages the account.
 
     def _create_new_agreement(self):
         self.newagr = Toplevel(self.newWindow)

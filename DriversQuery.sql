@@ -1,4 +1,4 @@
 --Query 1
-select location, local_contact, waste_type, cid_drop_off, cid_pick_up
+select location, local_contact, waste_type, cid_drop_off, cid_pick_up, date_time
 from service_agreements sa, service_fulfillments sf
-where sa.master_account = sf.master_account and sf.date_time > "start date input" and sf.date_time < "end date input"
+where sf.service_no = sa.service_no and sf.driver_id = '43743';
