@@ -191,7 +191,16 @@ class LoginFrame(Frame):
             #5The container ID of the container to be picked up.
 
     def _create_mgr_report(self):
-        print ('create mgr report')
+        
+
+        self.agreelist = Listbox(self.customerselected, width = 140, height = 10)
+        self.agreelist.grid(columnspan = 7)
+        for agreement in self.myagreements:
+            self.agreelist.insert(END, " " + str(agreement[0]) + " | " + str(agreement[2]) + " | " + str(agreement[3]) + " | " + str(agreement[4]) + " | " + str(agreement[5]) + " | " +  str(agreement[6]) + " | " + str(agreement[7]) + " | ")
+
+        self.returnbutton = Button(self.customerselected, text = "Return", command= self.customerselected.destroy)
+        self.returnbutton.grid(columnspan = 3)
+
         #TODO
         #Create a summary report that contains the following summary information for each of the account managers that the supervisor supervises: the total number of master agreements for an account manager, the total number of service agreements, the sum of the prices and the sum of the internal cost of all service agreements for the account manager. The report should be sorted by the difference between the sum of prices and the sum of internal costs.
         
@@ -211,7 +220,7 @@ class LoginFrame(Frame):
         self.buttoncustnum = Button(self.newrep, text = "Select", command = self._customer_selected)
         self.buttoncustnum.grid(columnspan = 2)
         self.exitcreate = Button(self.newrep, text = "Return", command= self.newrep.destroy)
-        self.exitcreate.grid(columspan = 2)
+        self.exitcreate.grid(columnspan = 2)
         #check userMode if 'account manager':
         #TODO
         #Create a summary report for a single customer, listing the total number of service agreements, the sum of the prices and the sum of the internal cost of the service agreements, as well as the number of different waste types that occur in the service agreements.
