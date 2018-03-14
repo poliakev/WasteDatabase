@@ -49,7 +49,8 @@ class LoginFrame(Frame):
         self.mycustomers = [] #maybe shouldn't be here o well
 
         self.pack()
-
+    
+    #TODO error message for invalid entry
     def _createUser(self):
         self.userWindow = Toplevel(self)
         self.userWindow.wm_title("Create New User")
@@ -232,7 +233,6 @@ class LoginFrame(Frame):
         self.returnbutton.grid(columnspan = 3)
 
     def _customer_selected(self):
-        print ('here')
         self.mycustomers = []
         statement = ('select * from accounts where account_mgr = ?')
         for row in waste.execute(statement, [self.myID]):
@@ -249,13 +249,93 @@ class LoginFrame(Frame):
                 if self.inputmasternum.get() == self.mycustomers[i][0]:
                     self._new_agreement((self.mycustomers[i]))
 
+    #sends valid master account number and customer info
     def _new_agreement(self, custlist):
-        #test number for own23 : 19924453
+        self.newagree = Toplevel(self.newagr)
+        self.newagree.wm_title("Create Agreement")
+
+        statement = ('select count(service_no) from service_agreements')
+        for num in waste.execute(statement):
+            self.newserviceno = int(num[0]) + 1
+        self.mymgr = self.myID
+
+        self.originaltotal = custlist[7]
+        self.mymaster = custlist[0]
+        
+        
+        #service_no +1 done
+        #master_account done
+        #loc input
+        # waste type input
+        # pick up schedule
+        # local contact number input
+        #internal_cost
+        # price
+        
         #For a given customer, add a new service agreement with all the required information -except for the master account number, and the service_no, which should be automatically filled in by the system; master_account is the number of the selected customer, and the service_no is a running numbers, so the next available number should be filled in.
         #TODO
         #find highest service num then add to it and pull master_account number from custlist
         #ie something like select service_no from service_agreements; (select highest service no)
-        print ('new agr')
+
+        
+        self.lablelocation = Label(self.newagree, text = "Location")
+        self.inputlocation = Entry(self.newagree)
+        self.lablelocation.grid(row = 0, column = 0)
+        self.inputlocation.grid(row = 0, column = 1)
+        
+        self.lablewastetype = Label(self.newagree, text = "Waste Type")
+        self.inputwastetype = Entry(self.newagree)
+        self.lablewastetype.grid(row = 1, column = 0)
+        self.inputwastetype.grid(row = 1, column = 1)
+
+        self.lablepusch = Label(self.newagree, text = "Pick Up Schedule")
+        self.inputpusch = Entry(self.newagree)
+        self.lablepusch.grid(row = 2, column = 0)
+        self.inputpusch.grid(row = 2, column = 1)
+    
+        self.lableloccont = Label(self.newagree, text = "Local Contact (###) ### ####")
+        self.inputloccont = Entry(self.newagree)
+        self.lableloccont.grid(row = 3, column = 0)
+        self.inputloccont.grid(row = 3, column = 1)
+        
+        #get time module and fix this
+        self.lableintcost = Label(self.newagree, text = "Internal Cost")
+        self.inputintcost = Entry(self.newagree)
+        self.lableintcost.grid(row = 4, column = 0)
+        self.inputintcost.grid(row = 4, column = 1)
+
+        self.lableprice = Label(self.newagree, text = "Price")
+        self.inputprice = Entry(self.newagree)
+        self.lableprice.grid(row = 5, column = 0)
+        self.inputprice.grid(row = 5, column = 1)
+    
+        self.selectacc = Button(self.newagree, text = "Create Agreement", command = self._create_agreement)
+        self.selectacc.grid(row = 6, column = 0)
+
+        self.exitcreate = Button(self.newagree, text = "Return", command= self.newagree.destroy)
+        self.exitcreate.grid(row = 6, column = 1)
+
+    def _create_agreement(self):
+        
+        self.service_no = self.newserviceno
+        self.mgr = self.mymgr
+        self.loc = self.inputlocation.get()
+        self.wastetype = self.inputwastetype.get()
+        self.pusch = self.inputpusch.get()
+        self.loccont = self.inputloccont.get()
+        self.intcost = self.inputintcost.get()
+        self.price = self.inputprice.get()
+        
+        statementagr = '''INSERT INTO service_agreements (service_no, master_account, location, waste_type, pick_up_schedule, local_contact, internal_cost, price) values(?,?,?,?,?,?,?,?)'''
+        waste.execute(statementagr, [self.service_no, self.mymaster, self.loc, self.wastetype, self.pusch, self.loccont, self.intcost, self.price])
+        
+
+        statementagr3 = '''UPDATE accounts set total_amount = ? where account_no = ?'''
+        waste.execute(statementagr3, [int(self.originaltotal) + int(self.price), self.mymaster])
+
+        w.commit()
+        
+        
         
 
     def _customer_found(self, custlist):
@@ -296,11 +376,16 @@ class LoginFrame(Frame):
         self.rlabletotalamount.grid(row = 1, column = 7)
         
         
+        #test number for own23 : 19924453
+        self.myagreements = []
+        statement = ('select * from service_agreements s, accounts a where a.account_no = s.master_account and s.master_account = ? order by s.service_no')
+        for row in waste.execute(statement, [custlist[0]]):
+            self.myagreements.append(row)
         
-        self.scroll = Scrollbar(self.customerselected)
-        self.scroll.grid(rowspan = 10, column = 8)
-
-        self.agreelist = Listbox(self.customerselected, yscrollcommand = self.scroll.set)
+        self.agreelist = Listbox(self.customerselected, width = 140, height = 10)
+        self.agreelist.grid(columnspan = 7)
+        for agreement in self.myagreements:
+            self.agreelist.insert(END, " " + str(agreement[0]) + " | " + str(agreement[2]) + " | " + str(agreement[3]) + " | " + str(agreement[4]) + " | " + str(agreement[5]) + " | " +  str(agreement[6]) + " | " + str(agreement[7]) + " | ")
 
         self.returnbutton = Button(self.customerselected, text = "Return", command= self.customerselected.destroy)
         self.returnbutton.grid(columnspan = 3)
@@ -330,12 +415,12 @@ class LoginFrame(Frame):
         self.inputcusttype.grid(row = 3, column = 1)
         
         #get time module and fix this
-        self.lablestartdate = Label(self.newacc, text = "Start Date (yyyy-mm-dd)")
+        self.lablestartdate = Label(self.newacc, text = "Start Date (HH:MM:SS yyyy-mm-dd)")
         self.inputstartdate = Entry(self.newacc)
         self.lablestartdate.grid(row = 4, column = 0)
         self.inputstartdate.grid(row = 4, column = 1)
 
-        self.lableenddate = Label(self.newacc, text = "End Date (yyyy-mm-dd)")
+        self.lableenddate = Label(self.newacc, text = "End Date (HH:MM:SS yyyy-mm-dd)")
         self.inputenddate = Entry(self.newacc)
         self.lableenddate.grid(row = 5, column = 0)
         self.inputenddate.grid(row = 5, column = 1)
