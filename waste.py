@@ -196,7 +196,22 @@ class LoginFrame(Frame):
         #Create a summary report that contains the following summary information for each of the account managers that the supervisor supervises: the total number of master agreements for an account manager, the total number of service agreements, the sum of the prices and the sum of the internal cost of all service agreements for the account manager. The report should be sorted by the difference between the sum of prices and the sum of internal costs.
         
     def _create_report(self):
-        print ('create report')
+        self.newrep = Toplevel(self.newWindow)
+        self.newrep.wm_title("Customer Report")
+        self.lablecustnum = Label(self.newrep, text = "Customer's Account Number")
+        self.inputmasternum = Entry(self.newrep)
+        self.lablecustnum.grid(row = 0, column = 0)
+        self.inputmasternum.grid(row = 0, column = 1)
+        
+        if self.myRole == 'account manager':
+            self.mode = 'newrep'
+        elif self.myRole == 'supervisor':
+            self.mode = 'newsuprep'
+
+        self.buttoncustnum = Button(self.newrep, text = "Select", command = self._customer_selected)
+        self.buttoncustnum.grid(columnspan = 2)
+        self.exitcreate = Button(self.newrep, text = "Return", command= self.newrep.destroy)
+        self.exitcreate.grid(columspan = 2)
         #check userMode if 'account manager':
         #TODO
         #Create a summary report for a single customer, listing the total number of service agreements, the sum of the prices and the sum of the internal cost of the service agreements, as well as the number of different waste types that occur in the service agreements.
@@ -207,7 +222,7 @@ class LoginFrame(Frame):
     def _create_new_agreement(self):
         self.newagr = Toplevel(self.newWindow)
         self.newagr.wm_title("Create New Agreement")
-        self.lablecustnum = Label(self.newagr, text = "Customer's Master Account Number ########")
+        self.lablecustnum = Label(self.newagr, text = "Customer's Account Number")
         self.inputmasternum = Entry(self.newagr)
         self.lablecustnum.grid(row = 0, column = 0)
         self.inputmasternum.grid(row = 0, column = 1)
@@ -215,8 +230,8 @@ class LoginFrame(Frame):
         self.mode = 'newagr'
         self.buttoncustnum = Button(self.newagr, text = "Select", command = self._customer_selected)
         self.buttoncustnum.grid(columnspan = 2)
-
-
+        self.exitcreate = Button(self.newagr, text = "Return", command= self.newagr.destroy)
+        self.exitcreate.grid(columnspan = 2)
 
     #for testing on own23 use number : 19924453
     def _select_cust(self):
@@ -230,13 +245,18 @@ class LoginFrame(Frame):
         self.buttoncustnum = Button(self.custselect, text = "Select", command = self._customer_selected)
         self.buttoncustnum.grid(columnspan = 2)
         self.returnbutton = Button(self.custselect, text = "Return", command= self.custselect.destroy)
-        self.returnbutton.grid(columnspan = 3)
+        self.returnbutton.grid(columnspan = 2)
 
     def _customer_selected(self):
         self.mycustomers = []
-        statement = ('select * from accounts where account_mgr = ?')
-        for row in waste.execute(statement, [self.myID]):
-            self.mycustomers.append(row)
+        if self.mode != 'newsuprep':
+            statement = ('select * from accounts where account_mgr = ?')
+            for row in waste.execute(statement, [self.myID]):
+                self.mycustomers.append(row)
+        else:
+            statement = ('select * from accounts a, personnel p where a.account_mgr = p.pid and supervisor_pid = ?')
+            for row in waste.execute(statement, [self.myID]):
+                self.mycustomers.append(row)
 
         if len(self.mycustomers) == 0:
             tm.showerror("No Customers Under Selected Account Manager!")
@@ -248,6 +268,51 @@ class LoginFrame(Frame):
             for i in range(len(self.mycustomers)):
                 if self.inputmasternum.get() == self.mycustomers[i][0]:
                     self._new_agreement((self.mycustomers[i]))
+        elif self.mode == 'newrep':
+            for i in range(len(self.mycustomers)):
+                if self.inputmasternum.get() == self.mycustomers[i][0]:
+                    self._new_report((self.mycustomers[i]))
+        elif self.mode == 'newsuprep':
+            for i in range(len(self.mycustomers)):
+                if self.inputmasternum.get() == self.mycustomers[i][0]:
+                    self._new_report((self.mycustomers[i]))
+
+    def _new_report(self, custlist):
+        self.newreport = Toplevel(self.newrep)
+        self.newreport.wm_title("Customer Report for : #%s" % custlist[0])
+        self.mymaster = custlist[0]
+        self.report = []
+        statement = ('''select count(*), sum(price), sum(internal_cost), count(distinct waste_type) from service_agreements where master_account = ?''')
+        for row in waste.execute(statement, [self.mymaster]):
+            self.report.append(row)
+        
+        #number service agree sum of price sum of internal number of waste types
+        self.lablenumserv = Label(self.newreport, text = "Number of Service Agreements")
+        self.lablenumserv.grid(row = 0, column = 0)
+        self.lablesumprice = Label(self.newreport, text = "Sum of Prices")
+        self.lablesumprice.grid(row = 0, column = 1)
+        self.lablesumint = Label(self.newreport, text = "Sum of Internal Cost")
+        self.lablesumint.grid(row = 0, column = 2)
+        self.lablenumtypes = Label(self.newreport, text = "Number of Waste types")
+        self.lablenumtypes.grid(row = 0, column = 3)
+        if self.mode == 'newsuprep':
+            self.lablemannum = Label(self.newreport, text = "Manager Number")
+            self.lablemannum.grid(row = 0, column = 4)
+
+        self.rlableaccnum = Label(self.newreport, text = self.report[0][0])
+        self.rlableaccnum.grid(row = 1, column = 0)
+        self.rlableaccmgr = Label(self.newreport, text = self.report[0][1])
+        self.rlableaccmgr.grid(row = 1, column = 1)
+        self.rlableaccname = Label(self.newreport, text = self.report[0][2])
+        self.rlableaccname.grid(row = 1, column = 2)
+        self.rlablecustname = Label(self.newreport, text = self.report[0][3])
+        self.rlablecustname.grid(row = 1, column = 3)
+        if self.mode == 'newsuprep':
+            self.rlablemannum = Label(self.newreport, text = custlist[1])
+            self.rlablemannum.grid(row = 1, column = 4)
+
+        self.returnbutton = Button(self.newreport, text = "Return", command= self.newreport.destroy)
+        self.returnbutton.grid(columnspan = 3)
 
     #sends valid master account number and customer info
     def _new_agreement(self, custlist):
@@ -261,22 +326,6 @@ class LoginFrame(Frame):
 
         self.originaltotal = custlist[7]
         self.mymaster = custlist[0]
-        
-        
-        #service_no +1 done
-        #master_account done
-        #loc input
-        # waste type input
-        # pick up schedule
-        # local contact number input
-        #internal_cost
-        # price
-        
-        #For a given customer, add a new service agreement with all the required information -except for the master account number, and the service_no, which should be automatically filled in by the system; master_account is the number of the selected customer, and the service_no is a running numbers, so the next available number should be filled in.
-        #TODO
-        #find highest service num then add to it and pull master_account number from custlist
-        #ie something like select service_no from service_agreements; (select highest service no)
-
         
         self.lablelocation = Label(self.newagree, text = "Location")
         self.inputlocation = Entry(self.newagree)
@@ -335,9 +384,6 @@ class LoginFrame(Frame):
 
         w.commit()
         
-        
-        
-
     def _customer_found(self, custlist):
         self.customerselected = Toplevel(self.custselect)
 
@@ -447,18 +493,42 @@ class LoginFrame(Frame):
         account_number = self.inputmasternum.get()
         if self.userMode == 'account manager':
             account_mgr = self.accman
+            cust_name = self.inputcustname.get()
+            contact_info = self.inputcontactinfo.get()
+            customer_type = self.inputcusttype.get()
+            start_date = self.inputstartdate.get()
+            end_date = self.inputenddate.get()
+            total_amount = self.custtotal
+            
+            statementacc = '''INSERT INTO accounts (account_no, account_mgr, customer_name, contact_info, customer_type, start_date, end_date, total_amount) values(?,?,?,?,?,?,?,?)'''
+            waste.execute(statementacc, [account_number, account_mgr, cust_name, contact_info, customer_type, start_date, end_date, total_amount])
+            w.commit()
         elif self.userMode == 'supervisor':
-            account_mgr = self.self.inputaccmgr.get()
-        cust_name = self.inputcustname.get()
-        contact_info = self.inputcontactinfo.get()
-        customer_type = self.inputcusttype.get()
-        start_date = self.inputstartdate.get()
-        end_date = self.inputenddate.get()
-        total_amount = self.custtotal
+            account_mgr = self.inputaccmgr.get()
+            
+            self.mymanagers = []
+            statement = ('select pid from personnel p where p.supervisor_pid = ?')
+            for row in waste.execute(statement, [self.myID]):
+                self.mymanagers.append(row[0])
+            if account_mgr in self.mymanagers:
+                cust_name = self.inputcustname.get()
+                contact_info = self.inputcontactinfo.get()
+                customer_type = self.inputcusttype.get()
+                start_date = self.inputstartdate.get()
+                end_date = self.inputenddate.get()
+                total_amount = self.custtotal
+                
+                statementacc = '''INSERT INTO accounts (account_no, account_mgr, customer_name, contact_info, customer_type, start_date, end_date, total_amount) values(?,?,?,?,?,?,?,?)'''
+                waste.execute(statementacc, [account_number, account_mgr, cust_name, contact_info, customer_type, start_date, end_date, total_amount])
+                w.commit()
+            else:
+                tm.showerror("Error","Unauthorized Assignment of Management")
+                
+                
+
+
+
         
-        statementacc = '''INSERT INTO accounts (account_no, account_mgr, customer_name, contact_info, customer_type, start_date, end_date, total_amount) values(?,?,?,?,?,?,?,?)'''
-        waste.execute(statementacc, [account_number, account_mgr, cust_name, contact_info, customer_type, start_date, end_date, total_amount])
-        w.commit()
 
 
 root = Tk()
